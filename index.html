@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d6b5f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1514" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex, nofollow">
+<title>Portafoglio</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html { -webkit-text-size-adjust: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+
+/* Layout: colonna unica a schede (Portafoglio · Simulatore · Mutuo e prestiti · Storico · Tasse), riepilogo in alto, dettaglio sotto. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --surface-2: #e9eeec;
+  --fg: #16201d;
+  --muted: #5b6965;
+  --line: #d3dbd8;
+  --accent: #0d6b5f;
+  --accent-soft: #d5ebe6;
+  --on-accent: #ffffff;
+  --gain: #12804a;
+  --loss: #b8322b;
+  --warn-bg: #fdf1d6;
+  --warn-fg: #6e4b00;
+  --chart-gross: #8aa39c;
+  --spese: #c98a12;
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514; --surface: #172120; --surface-2: #1f2b29; --fg: #e4ecea; --muted: #94a6a1; --line: #2c3a37;
+    --accent: #4cc3b0; --accent-soft: #173a35; --on-accent: #06201c; --gain: #4fcf8a; --loss: #f07a6f;
+    --warn-bg: #3a2f12; --warn-fg: #f3d692; --chart-gross: #5f7a73; --spese: #e0b14f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --surface: #172120; --surface-2: #1f2b29; --fg: #e4ecea; --muted: #94a6a1; --line: #2c3a37;
+  --accent: #4cc3b0; --accent-soft: #173a35; --on-accent: #06201c; --gain: #4fcf8a; --loss: #f07a6f;
+  --warn-bg: #3a2f12; --warn-fg: #f3d692; --chart-gross: #5f7a73; --spese: #e0b14f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; font-weight: 700; }
+h3 { font-size: 0.95rem; font-weight: 700; }
+p { margin: 0; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.gain { color: var(--gain); }
+.loss { color: var(--loss); }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+header.top .sub { color: var(--muted); font-size: 0.9rem; }
+.lock { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+
+nav.tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 12px; width: fit-content; max-width: 100%; overflow-x: auto; }
+nav.tabs button { border: 0; background: transparent; color: var(--muted); font: 600 0.92rem var(--font-body); padding: 8px 16px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
+.tile .lbl { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.tile .val { font-family: var(--font-num); font-size: 1.35rem; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile .note { font-size: 0.8rem; color: var(--muted); }
+.tile.hero { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.tile.hero .lbl, .tile.hero .note { color: var(--on-accent); opacity: 0.85; }
+
+button, .btn { font: 600 0.9rem var(--font-body); border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+button.danger { color: var(--loss); }
+button.danger.sure { background: var(--loss); color: #fff; border-color: var(--loss); }
+button.link { border: 0; background: none; padding: 4px 6px; color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: 0.5; cursor: default; }
+
+label.f { display: grid; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); min-width: 0; }
+input[type="text"], input[type="date"], select, textarea {
+  font: 400 0.95rem var(--font-body); color: var(--fg); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+input.num { font-family: var(--font-num); }
+.grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.list { display: grid; }
+.inv { border-top: 1px solid var(--line); }
+.inv:first-child { border-top: 0; }
+.inv-head { display: grid; grid-template-columns: minmax(0, 2.2fr) repeat(3, minmax(0, 1fr)) 90px; gap: 12px; align-items: center; padding: 12px 4px; cursor: pointer; width: 100%; text-align: left; background: none; border: 0; border-radius: 0; font-weight: 400; }
+.inv-head:hover { background: var(--surface-2); }
+.inv-name { font-weight: 600; overflow-wrap: anywhere; }
+.pill { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-top: 2px; }
+.cell { display: grid; text-align: right; }
+.cell .k { display: none; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.list-head { display: grid; grid-template-columns: minmax(0, 2.2fr) repeat(3, minmax(0, 1fr)) 90px; gap: 12px; padding: 0 4px 6px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.list-head span:not(:first-child) { text-align: right; }
+.inv-body { padding: 4px 4px 18px; display: grid; gap: 16px; }
+.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.box { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.box > button { justify-self: start; }
+.hist { max-height: 220px; overflow-y: auto; display: grid; }
+.hist div { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 0.88rem; }
+.hist div:last-child { border-bottom: 0; }
+.hist button { padding: 0 6px; font-size: 0.8rem; border: 0; background: none; color: var(--muted); }
+
+.banner { background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px; padding: 10px 14px; font-size: 0.88rem; }
+.empty { text-align: center; padding: 28px 12px; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+
+/* simulatore */
+.sim { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.rate { display: grid; gap: 6px; background: var(--accent-soft); border-radius: var(--r); padding: 14px; }
+.rate .big { font-family: var(--font-num); font-size: 2rem; color: var(--accent); line-height: 1; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.range-row { display: grid; gap: 4px; }
+.range-row .top { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.range-row .top b { color: var(--fg); font-family: var(--font-num); font-weight: 500; }
+.check { display: flex; gap: 8px; align-items: start; font-size: 0.88rem; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; border: 0; border-radius: 0; font-size: 0.82rem; padding: 7px 8px; background: var(--surface); color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.breakdown { display: grid; gap: 6px; }
+.breakdown div { display: flex; justify-content: space-between; gap: 12px; font-size: 0.92rem; }
+.breakdown div.tot { border-top: 1px solid var(--line); padding-top: 8px; font-weight: 600; font-size: 1rem; }
+.chart-wrap { width: 100%; overflow-x: auto; }
+svg.chart { width: 100%; height: auto; display: block; min-width: 320px; }
+svg.chart text { fill: var(--muted); font: 11px var(--font-num); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+details summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+
+/* tasse */
+.tax-table td:nth-child(2) { font-family: var(--font-num); font-weight: 500; }
+.tax-table td { white-space: normal; text-align: left; vertical-align: top; }
+.sources a { color: var(--accent); }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+.top-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.compound { border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; font-size: 0.86rem; }
+.compound .steps { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--font-num); }
+.compound .steps span.arr { color: var(--muted); }
+.stack { display: flex; height: 18px; border-radius: 6px; overflow: hidden; background: var(--surface-2); }
+.stack > div { height: 100%; }
+.legend2 { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.82rem; }
+.legend2 i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px 12px; margin: 0; display: grid; gap: 10px; min-width: 0; }
+legend { font: 700 0.85rem var(--font-display); padding: 0 6px; }
+.hint { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
+.save-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.calc-list { display: grid; gap: 10px; }
+.calc { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.calc .title { font-weight: 600; overflow-wrap: anywhere; }
+.calc .facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.84rem; color: var(--muted); }
+.calc .facts b { color: var(--fg); font-family: var(--font-num); font-weight: 500; }
+.calc input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.best { color: var(--gain); font-weight: 600; }
+.cmp td:first-child { color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; z-index: 20; max-width: calc(100% - 32px); }
+@media (max-width: 760px) {
+  .calc { grid-template-columns: auto minmax(0, 1fr); }
+  .calc .acts { grid-column: 1 / -1; }
+  .sim { grid-template-columns: minmax(0, 1fr); }
+  .list-head { display: none; }
+  .inv-head { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .inv-head > span:first-child { grid-column: 1 / -1; }
+  .inv-head .spark { display: none; }
+  .cell { text-align: left; }
+  .cell .k { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.lock.link { border: 0; background: none; padding: 4px 6px; }
+.lock.ok { color: var(--gain); }
+.lock.err { color: var(--loss); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Portafoglio di Federico</h1>
+      <p class="sub">Quanto hai messo, quanto vale oggi e quanto ti resta in tasca dopo le tasse italiane.</p>
+    </div>
+    <div class="top-actions">
+    <button id="btnExcel" title="Scarica un file Excel con portafoglio, simulazione, calcoli salvati e piani di ammortamento">⤓ Scarica Excel</button>
+    <button class="lock link" id="syncStato" type="button" title="Sincronizza ora">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      <span id="syncTesto">Solo su questo dispositivo</span>
+    </button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sezioni">
+    <button role="tab" id="t-port" aria-selected="true" data-tab="port">Portafoglio</button>
+    <button role="tab" id="t-sim" aria-selected="false" data-tab="sim">Simulatore</button>
+    <button role="tab" id="t-mut" aria-selected="false" data-tab="mut">Mutuo e prestiti</button>
+    <button role="tab" id="t-sto" aria-selected="false" data-tab="sto">Storico</button>
+    <button role="tab" id="t-tax" aria-selected="false" data-tab="tax">Tasse</button>
+    <button role="tab" id="t-set" aria-selected="false" data-tab="set">Impostazioni</button>
+  </nav>
+
+  <!-- PORTAFOGLIO -->
+  <section id="v-port" class="wrap" style="gap:16px">
+    <div class="banner" id="dbBanner" hidden></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="panel">
+      <div class="row-actions" style="justify-content:space-between">
+        <h2>I tuoi investimenti</h2>
+        <button class="primary" id="btnNew">+ Aggiungi investimento</button>
+      </div>
+
+      <form id="newForm" class="box" hidden>
+        <h3>Nuovo investimento</h3>
+        <div class="grid-form">
+          <label class="f">Nome<input type="text" id="n-nome" placeholder="Es. ETF azionario mondo" required></label>
+          <label class="f">Tipo<select id="n-tipo"></select></label>
+          <label class="f">ISIN o ticker (facoltativo)<input type="text" id="n-isin" placeholder="Es. IE00B4L5Y983"></label>
+          <label class="f">Data primo versamento<input type="date" id="n-data"></label>
+          <label class="f">Quanto hai messo (€)<input type="text" inputmode="decimal" class="num" id="n-importo" placeholder="1.000" required></label>
+          <label class="f">Valore oggi (€)<input type="text" inputmode="decimal" class="num" id="n-valore" placeholder="vuoto = uguale a quanto hai messo"></label>
+        </div>
+        <p class="small muted" id="n-hint"></p>
+        <div class="row-actions">
+          <button type="submit" class="primary">Salva</button>
+          <button type="button" id="btnCancelNew">Annulla</button>
+        </div>
+      </form>
+
+      <div id="list"></div>
+    </div>
+    <p class="small muted">I valori li aggiorni tu: apri un investimento, guarda la quotazione dalla tua banca o dal link "Controlla prezzo" e scrivi il nuovo valore. Ogni aggiornamento resta nello storico, così vedi come sta andando.</p>
+  </section>
+
+  <!-- SIMULATORE -->
+  <section id="v-sim" hidden>
+    <div class="sim">
+      <div class="panel">
+        <div class="rate">
+          <div class="range-row">
+            <div class="top"><span>Rendimento annuo lordo</span></div>
+            <div class="big" id="o-rate">5,0%</div>
+            <input type="range" id="s-rate" min="-5" max="15" step="0.1" value="5" aria-label="Rendimento annuo lordo">
+            <div class="small muted" style="display:flex;justify-content:space-between"><span>−5%</span><span>0</span><span>15%</span></div>
+          </div>
+        </div>
+        <label class="f">Tipo di investimento<select id="s-tipo"></select></label>
+        <div class="small muted" id="s-tipoNote"></div>
+        <div class="grid-form" style="grid-template-columns:1fr 1fr">
+          <label class="f">Capitale iniziale (€)<input type="text" inputmode="decimal" class="num" id="s-cap" value="10.000"></label>
+          <label class="f">Ogni mese aggiungi (€)<input type="text" inputmode="decimal" class="num" id="s-mese" value="200"></label>
+        </div>
+        <button class="link" id="s-fromPort" style="justify-self:start">Usa il valore attuale del portafoglio</button>
+        <div class="range-row">
+          <div class="top"><span>Per quanti anni</span><b id="o-anni">10 anni</b></div>
+          <input type="range" id="s-anni" min="1" max="40" step="1" value="10" aria-label="Anni">
+        </div>
+        <div class="range-row">
+          <div class="top"><span>Inflazione stimata</span><b id="o-infl">2,0%</b></div>
+          <input type="range" id="s-infl" min="0" max="6" step="0.1" value="2" aria-label="Inflazione">
+        </div>
+        <div class="f" style="display:grid;gap:6px">
+          <span class="small" style="font-weight:600;color:var(--muted)">Come arrivano i guadagni</span>
+          <div class="seg" role="group" aria-label="Modalità">
+            <button type="button" id="m-acc" aria-pressed="true">Accumulo (tasse alla vendita)</button>
+            <button type="button" id="m-ced" aria-pressed="false">Interessi ogni anno</button>
+          </div>
+        </div>
+        <div class="compound" id="s-compound"></div>
+        <div class="save-row">
+          <label class="f">Salva nello storico come<input type="text" id="s-nome" placeholder="Es. PAC ETF 200 € al mese"></label>
+          <button id="s-save">Salva</button>
+        </div>
+      </div>
+
+      <div class="wrap" style="gap:16px">
+        <div class="tiles">
+          <div class="tile hero"><span class="lbl">Ti resta in tasca</span><span class="val" id="r-netto">—</span><span class="note" id="r-nettoNote"></span></div>
+          <div class="tile"><span class="lbl">Hai versato</span><span class="val" id="r-vers">—</span><span class="note" id="r-versNote"></span></div>
+          <div class="tile"><span class="lbl">Guadagno netto</span><span class="val" id="r-gain">—</span><span class="note" id="r-gainNote"></span></div>
+        </div>
+        <div class="panel">
+          <h2>Andamento negli anni</h2>
+          <div class="chart-wrap" id="chart"></div>
+          <div class="legend">
+            <span><i style="background:var(--chart-gross)"></i>Valore lordo</span>
+            <span><i style="background:var(--accent)"></i>Netto se vendi</span>
+            <span><i style="background:var(--muted)"></i>Soldi versati</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Dove vanno i soldi</h2>
+          <div class="breakdown" id="r-break"></div>
+          <p class="small muted" id="r-compare"></p>
+          <details>
+            <summary>Anno per anno</summary>
+            <div class="table-wrap"><table id="r-table"></table></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MUTUO E PRESTITI -->
+  <section id="v-mut" hidden>
+    <div class="sim">
+      <form class="panel" id="mutForm" autocomplete="off">
+        <div class="seg" role="group" aria-label="Tipo di calcolo">
+          <button type="button" id="k-mutuo" aria-pressed="true">Mutuo casa</button>
+          <button type="button" id="k-prestito" aria-pressed="false">Finanziamento</button>
+        </div>
+        <p class="hint" id="k-esempio">Valori di esempio: sostituiscili con quelli del preventivo della banca.</p>
+        <div class="grid-form" style="grid-template-columns:1fr 1fr">
+          <label class="f">Nome<input type="text" id="k-nome" placeholder="Es. Mutuo A"></label>
+          <label class="f">Banca o finanziaria<input type="text" id="k-banca" placeholder="Es. Banca X"></label>
+        </div>
+        <fieldset>
+          <legend id="k-legBene">La casa</legend>
+          <div class="grid-form" style="grid-template-columns:1fr 1fr">
+            <label class="f">Prezzo (€)<input type="text" inputmode="decimal" class="num" id="k-prezzo"></label>
+            <label class="f">Anticipo tuo (€)<input type="text" inputmode="decimal" class="num" id="k-anticipo"></label>
+          </div>
+          <p class="small">Chiedi in prestito: <b class="num" id="k-importo">—</b> <span class="hint" id="k-ltv"></span></p>
+        </fieldset>
+        <fieldset>
+          <legend>Condizioni</legend>
+          <div class="rate" style="padding:10px 12px">
+            <div class="range-row">
+              <div class="top"><span>TAN (tasso annuo)</span></div>
+              <div class="big" id="o-tan" style="font-size:1.6rem">—</div>
+              <input type="range" id="k-tan" min="0" max="15" step="0.05" aria-label="TAN">
+            </div>
+          </div>
+          <div class="range-row">
+            <div class="top"><span>Durata</span><b id="o-durata">—</b></div>
+            <input type="range" id="k-durata" min="1" max="40" step="1" aria-label="Durata">
+          </div>
+          <label class="f" id="k-tipoTassoBox">Tipo di tasso
+            <select id="k-tipoTasso"><option value="fisso">Fisso</option><option value="variabile">Variabile (calcolo col tasso di oggi)</option></select>
+          </label>
+          <label class="f" id="k-maxiBox" hidden>Maxirata finale (€)<input type="text" inputmode="decimal" class="num" id="k-maxi"><span class="hint">Tipica dei finanziamenti auto: rate più basse, ma alla fine paghi questa cifra (o restituisci l'auto).</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Spese della banca</legend>
+          <div class="grid-form" style="grid-template-columns:1fr 1fr">
+            <label class="f">Istruttoria (€)<input type="text" inputmode="decimal" class="num" id="k-istr"></label>
+            <label class="f" id="k-periziaBox">Perizia (€)<input type="text" inputmode="decimal" class="num" id="k-perizia"></label>
+            <label class="f">Incasso rata (€ per rata)<input type="text" inputmode="decimal" class="num" id="k-incasso"></label>
+            <label class="f" id="k-assLbl">Assicurazione incendio obbligatoria (€ l'anno)<input type="text" inputmode="decimal" class="num" id="k-ass"></label>
+            <label class="f" id="k-impBox" hidden>Bollo o imposta (€)<input type="text" inputmode="decimal" class="num" id="k-imp"><span class="hint">Di solito 16 € di bollo, o 0,25% se oltre 18 mesi.</span></label>
+          </div>
+          <label class="check" id="k-primaBox"><input type="checkbox" id="k-prima" checked> <span>Prima casa: imposta sostitutiva 0,25% invece del 2%</span></label>
+        </fieldset>
+        <fieldset>
+          <legend id="k-legAcq">Spese per comprare (non vanno alla banca)</legend>
+          <div class="grid-form" style="grid-template-columns:1fr 1fr">
+            <label class="f" id="k-notaioLbl">Notaio (€)<input type="text" inputmode="decimal" class="num" id="k-notaio"></label>
+            <label class="f" id="k-agenziaLbl">Agenzia (€)<input type="text" inputmode="decimal" class="num" id="k-agenzia"></label>
+            <label class="f" id="k-impAcqLbl">Imposte d'acquisto (€)<input type="text" inputmode="decimal" class="num" id="k-impAcq"></label>
+          </div>
+          <p class="hint" id="k-impAcqHint">Prima casa da privato: 2% del valore catastale (minimo 1.000 €) più 100 € di ipotecaria e catastale. Da costruttore: IVA 4%. Seconda casa: 9% catastale o IVA 10%.</p>
+        </fieldset>
+        <label class="f">Note (condizioni, scadenza offerta…)<textarea id="k-note" rows="2"></textarea></label>
+        <div class="row-actions">
+          <button type="button" class="primary" id="k-save">Salva nello storico</button>
+          <button type="button" id="k-reset">Rimetti l'esempio</button>
+        </div>
+      </form>
+
+      <div class="wrap" style="gap:16px">
+        <div class="tiles">
+          <div class="tile hero"><span class="lbl">Rata al mese</span><span class="val" id="q-rata">—</span><span class="note" id="q-rataNote"></span></div>
+          <div class="tile"><span class="lbl">TAEG</span><span class="val" id="q-taeg">—</span><span class="note">costo vero del prestito, con le spese</span></div>
+          <div class="tile"><span class="lbl">Interessi totali</span><span class="val" id="q-int">—</span><span class="note" id="q-intNote"></span></div>
+        </div>
+        <div class="panel">
+          <h2 id="q-titCosto">Quanto ti costa davvero</h2>
+          <p style="font-size:1.05rem">Prezzo <b class="num" id="q-prezzo">—</b> → costo finale <b class="num" id="q-costo">—</b> <span class="loss num" id="q-extra"></span></p>
+          <div class="stack" id="q-stack" aria-hidden="true"></div>
+          <div class="legend2" id="q-legend"></div>
+          <div class="breakdown" id="q-break"></div>
+        </div>
+        <div class="panel">
+          <h2>Piano di ammortamento</h2>
+          <p class="small muted">Ogni rata paga prima gli interessi sul debito che resta e poi un pezzo di capitale: all'inizio paghi soprattutto interessi.</p>
+          <div class="table-wrap"><table id="q-amm"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORICO -->
+  <section id="v-sto" hidden>
+    <div class="panel">
+      <div class="row-actions" style="justify-content:space-between">
+        <h2>Storico dei calcoli</h2>
+        <span class="small muted" id="sto-count"></span>
+      </div>
+      <p class="small muted">Qui finiscono i mutui, i finanziamenti e le simulazioni che salvi. Spunta due o più richieste dello stesso tipo per confrontarle.</p>
+      <div class="calc-list" id="sto-list"></div>
+    </div>
+    <div class="panel" id="sto-cmpBox" hidden style="margin-top:16px">
+      <h2>Confronto</h2>
+      <div class="table-wrap"><table class="cmp" id="sto-cmp"></table></div>
+      <p class="small muted">In verde il valore migliore di ogni riga.</p>
+    </div>
+  </section>
+
+  <!-- IMPOSTAZIONI -->
+  <section id="v-set" hidden>
+    <div class="wrap" style="gap:16px">
+      <div class="panel">
+        <h2>Sincronizzazione con il tuo Foglio Google</h2>
+        <p class="small muted">I dati stanno su questo dispositivo. Se colleghi il tuo Foglio Google privato, telefono e PC vedono gli stessi investimenti e gli stessi calcoli. Lo stesso indirizzo e lo stesso codice vanno inseriti su ogni dispositivo.</p>
+        <label class="f">Indirizzo dell'app web di Apps Script<input type="text" id="c-url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" spellcheck="false"></label>
+        <label class="f">Codice segreto<input type="text" id="c-token" autocomplete="off" spellcheck="false" placeholder="Lo trovi nel Foglio: menu Investimenti › Mostra codice segreto"></label>
+        <div class="row-actions">
+          <button class="primary" type="button" id="c-save">Salva e collega</button>
+          <button type="button" id="c-sync">Sincronizza ora</button>
+          <button type="button" class="danger" id="c-off">Scollega</button>
+        </div>
+        <p class="small" id="c-stato"></p>
+      </div>
+      <div class="panel">
+        <h2>Backup</h2>
+        <p class="small muted">Un file con tutti i tuoi dati, da tenere da parte o da usare per spostarli su un altro dispositivo senza il Foglio Google.</p>
+        <div class="row-actions">
+          <button type="button" id="b-exp">Scarica backup</button>
+          <label class="btn" style="cursor:pointer">Ripristina da backup<input type="file" accept=".json,application/json" id="b-imp" hidden></label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASSE -->
+  <section id="v-tax" hidden>
+    <div class="panel">
+      <h2>Le tasse che usa l'app</h2>
+      <p class="muted small">Regole per una persona fisica residente in Italia, con banca o broker italiano (regime amministrato: le tasse le trattiene la banca). Controllate il 16 ottobre 2026.</p>
+      <div class="table-wrap">
+        <table class="tax-table">
+          <thead><tr><th>Cosa</th><th>Tassa</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>Azioni, ETF, fondi, obbligazioni di società</td><td>26%</td><td>Sul guadagno: plusvalenze, dividendi, cedole, interessi.</td></tr>
+            <tr><td>Titoli di Stato italiani (BTP, BOT, CCT, BTP Valore) e Stati "white list"</td><td>12,5%</td><td>Sia cedole sia guadagno di prezzo. Negli ETF che contengono titoli di Stato la quota di titoli di Stato è tassata al 12,5%, quindi l'aliquota reale sta tra 12,5% e 26%.</td></tr>
+            <tr><td>Buoni fruttiferi postali</td><td>12,5%</td><td>Bollo 0,2% solo se il valore complessivo dei buoni supera 5.000 €.</td></tr>
+            <tr><td>Conto deposito, interessi del conto corrente</td><td>26%</td><td>Gli interessi ti arrivano già al netto.</td></tr>
+            <tr><td>Criptovalute</td><td>33%</td><td>Dal 1° gennaio 2026, senza più la soglia di 2.000 €. Restano al 26% gli ETP/ETN su Bitcoin e le stablecoin in euro. Le paghi tu in dichiarazione (quadro RT).</td></tr>
+            <tr><td>Imposta di bollo su investimenti</td><td>0,2% l'anno</td><td>Sul valore al 31/12 di dossier titoli, ETF, fondi, conto deposito e cripto. Si paga anche se perdi.</td></tr>
+            <tr><td>Imposta di bollo sul conto corrente</td><td>34,20 € l'anno</td><td>Solo se la giacenza media annua presso quella banca supera 5.000 €.</td></tr>
+            <tr><td>Imposta sostitutiva sul mutuo</td><td>0,25% / 2%</td><td>Sull'importo del mutuo: 0,25% per la prima casa, 2% negli altri casi. Sostituisce registro, ipotecaria, catastale e bollo.</td></tr>
+            <tr><td>Finanziamenti (auto, prestiti)</td><td>16 € o 0,25%</td><td>Bollo di 16 € sul contratto, oppure imposta sostitutiva 0,25% se dura più di 18 mesi. Controlla quale applica la finanziaria nel preventivo (SECCI).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Come calcola</h3>
+      <ul class="plain small">
+        <li><b>Accumulo</b> (ETF ad accumulo, azioni senza dividendi, cripto): la tassa si paga una volta sola quando vendi, sul guadagno totale. Nel frattempo anche la parte che andrà allo Stato continua a fruttare.</li>
+        <li><b>Interessi ogni anno</b> (conto deposito, BTP a cedola): ogni anno la tassa viene tolta dagli interessi e reinvesti solo il netto.</li>
+        <li><b>Bollo</b>: calcolato ogni anno sul valore e sottratto dal netto finale, perché lo paghi a parte dal conto.</li>
+        <li><b>Perdite</b>: se vendi in perdita non paghi tasse e la minusvalenza si può usare per 4 anni contro guadagni futuri (lo "zainetto"). Attenzione: le perdite non si possono compensare con i guadagni degli ETF e dei fondi.</li>
+        <li><b>Interesse composto</b>: ogni anno gli interessi si aggiungono al capitale e l'anno dopo fruttano anche loro. 100 € all'1% diventano 101, poi 102,01, poi 103,03: è il motivo per cui il tempo conta tanto.</li>
+        <li><b>Mutuo e finanziamenti</b>: rata alla francese (rata fissa). Il TAEG lo calcola l'app da tasso, spese della banca, incasso rata e assicurazione obbligatoria. Notaio e spese d'acquisto non entrano nel TAEG ma sì nel costo finale.</li>
+        <li>L'app non conta le commissioni del broker, il cambio valuta e i costi annui dei fondi (TER): toglili dal rendimento che imposti.</li>
+      </ul>
+      <p class="banner">Sono stime per farti un'idea. Per decisioni importanti, o se usi un broker estero (regime dichiarativo, IVAFE e quadro RW), senti un commercialista.</p>
+      <div class="sources small">
+        <h3 style="margin-bottom:4px">Fonti</h3>
+        <ul class="plain">
+          <li><a href="https://fiscoinvestimenti.it/?p=14825" target="_blank" rel="noopener">Fiscoinvestimenti · Tassazione dei titoli di Stato 2026</a></li>
+          <li><a href="https://www.money.it/tasse-bitcoin-criptovalute-guida-dichiarazione" target="_blank" rel="noopener">Money.it · Tassazione criptovalute 2026</a></li>
+          <li><a href="https://www.fiscal-focus.it/quotidiano/il-quotidiano/articoli-fisco/cripto-attivita-2026-aliquota-al-33-ma-scatta-una-deroga-per-i-token-di-moneta-elettronica-in-euro,3,180507" target="_blank" rel="noopener">Fiscal Focus · Cripto-attività 2026, aliquota al 33%</a></li>
+          <li><a href="https://tuttocalcolato.it/blog/imposta-bollo-conto-corrente-titoli-2026/" target="_blank" rel="noopener">Tuttocalcolato · Imposta di bollo 2026</a></li>
+          <li><a href="https://www.facile.it/mutui/glossario/imposta-sostitutiva-mutui.html" target="_blank" rel="noopener">Facile.it · Imposta sostitutiva sui mutui</a></li>
+          <li><a href="https://www.money.it/spese-istruttoria-mutuo-ecco-tutti-i-costi-da-sostenere" target="_blank" rel="noopener">Money.it · Tutti i costi del mutuo</a></li>
+          <li><a href="https://quifinanza.it/fisco-tasse/tassazione-rendite-finanziarie-investimenti/956428/" target="_blank" rel="noopener">QuiFinanza · Tassazione rendite finanziarie 12,5% o 26%</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="app.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
